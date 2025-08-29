@@ -1,7 +1,7 @@
 [[stack]]
 name = "hello-world"
 [stack.config]
-server = "local"
+server = "Local"
 poll_for_updates = true
 auto_update = true
 repo = "Myrenic/WyvernWatch"
