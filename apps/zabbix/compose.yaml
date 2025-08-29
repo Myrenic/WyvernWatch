@@ -93,7 +93,6 @@ services:
       - zbx_database:/var/lib/postgresql/data
     networks:
       - zabbix-network
-      - postgres_backup-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 30s
@@ -111,5 +110,3 @@ volumes:
 networks:
   zabbix-network:
     driver: bridge
-  postgres_backup-network:
-    external: true
