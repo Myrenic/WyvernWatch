@@ -1,5 +1,15 @@
 [[procedure]]
-name = "Base"
+name = "deploy-stacks"
+
+[[procedure.config.stage]]
+name = "Deploy all stacks"
+enabled = true
+executions = [
+  { execution.type = "BatchDeploy", execution.params.pattern = """, # Match deployments by name, id, wildcard, or \regex\., *""", enabled = true }
+]
+
+[[procedure]]
+name = "Git Sync"
 
 [[procedure.config.stage]]
 name = "Make sure everything is up-to-date"
@@ -9,4 +19,11 @@ executions = [
   { execution.type = "RunSync", execution.params.sync = "base_helper", enabled = true },
   { execution.type = "Sleep", execution.params.duration_ms = 5, enabled = true },
   { execution.type = "RunSync", execution.params.sync = "base", enabled = true }
+]
+
+[[procedure.config.stage]]
+name = "Deploy"
+enabled = true
+executions = [
+  { execution.type = "RunProcedure", execution.params.procedure = "deploy-stacks", enabled = true }
 ]
