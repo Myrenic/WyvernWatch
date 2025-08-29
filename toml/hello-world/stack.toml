@@ -1,5 +1,5 @@
 [[stack]]
-name = "zabbix"
+name = "hello-world"
 [stack.config]
 server = "local"
 poll_for_updates = true
