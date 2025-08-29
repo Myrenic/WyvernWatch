@@ -5,3 +5,8 @@ services:
         ports:
             - 80:8000
         image: crccheck/hello-world
+    hello-world2:
+        container_name: web-test2
+        ports:
+            - 81:8000
+        image: crccheck/hello-world
