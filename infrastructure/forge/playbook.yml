@@ -1,0 +1,137 @@
+---
+- name: Deploy Komodo
+  hosts: all
+  become: true
+  vars:
+    mongo_user: "{{ mongo_user }}"
+    mongo_password: "{{ mongo_password }}"
+    komodo_user: "{{ komodo_user }}"
+    komodo_password: "{{ komodo_password }}"
+    komodo_secret_key: "{{ komodo_secret_key }}"
+    deploy_path: "/opt/komodo"
+
+  tasks:
+    - name: Give the VM some time to start up
+      ansible.builtin.shell: |
+        sleep 20
+
+    - name: Update all packages
+      dnf:
+        name: "*"
+        state: latest
+
+    - name: Install required packages
+      dnf:
+        name:
+          - podman
+          - iptables-services
+          - firewalld
+          - python3
+          - python3-pip
+        state: present
+
+    - name: Install podman-compose
+      ansible.builtin.pip:
+        name: podman-compose
+        executable: pip3
+
+    - name: Ensure firewalld is running and enabled
+      systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Open port 9000/tcp in firewalld
+      firewalld:
+        port: 9000/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Ensure deployment directory exists
+      file:
+        path: "{{ deploy_path }}"
+        state: directory
+
+    - name: Create docker-compose.yml
+      copy:
+        dest: "{{ deploy_path }}/docker-compose.yml"
+        content: |
+          version: '3.8'
+          services:
+            mongo:
+              image: docker.io/library/mongo:latest
+              labels:
+                komodo.skip: "" # Prevent Komodo from stopping with StopAllContainers
+              command: --quiet --wiredTigerCacheSizeGB 0.25
+              restart: unless-stopped
+              # ports:
+              #   - 27017:27017
+              volumes:
+                - mongo-data:/data/db
+                - mongo-config:/data/configdb
+              environment:
+                MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DATABASE_USERNAME}
+                MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DATABASE_PASSWORD}
+            core:
+              image: ghcr.io/moghtech/komodo-core:latest
+              labels:
+                komodo.skip: "" # Prevent Komodo from stopping with StopAllContainers
+              restart: unless-stopped
+              depends_on:
+                - mongo
+              ports:
+                - 9120:9120
+              environment:
+                KOMODO_DATABASE_ADDRESS: mongo:27017
+                KOMODO_DATABASE_USERNAME: ${KOMODO_DATABASE_USERNAME}
+                KOMODO_DATABASE_PASSWORD: ${KOMODO_DATABASE_PASSWORD}
+                KOMODO_INIT_ADMIN_USERNAME: ${KOMODO_INIT_ADMIN_USERNAME}
+                KOMODO_INIT_ADMIN_PASSWORD: ${KOMODO_INIT_ADMIN_PASSWORD}
+                KOMODO_PASSKEY: ${KOMODO_PASSKEY}
+                KOMODO_BIND_IP: "0.0.0.0"
+                KOMODO_LOCAL_AUTH: "true"
+              # volumes:
+              #   ## Store dated backups of the database - https://komo.do/docs/setup/backup
+              #   # - ${COMPOSE_KOMODO_BACKUPS_PATH}:/backups
+              #   ## Store sync files on server
+              #   # - /path/to/syncs:/syncs
+              #   ## Optionally mount a custom core.config.toml
+              #   # - /path/to/core.config.toml:/config/config.toml
+            periphery:
+              image: ghcr.io/moghtech/komodo-periphery:latest
+              labels:
+                komodo.skip: "" # Prevent Komodo from stopping with StopAllContainers
+              restart: unless-stopped
+              environment:
+                PERIPHERY_ROOT_DIRECTORY=/etc/komodo
+                PERIPHERY_PASSKEYS=${KOMODO_PASSKEY}
+                PERIPHERY_DISABLE_TERMINALS=false
+                PERIPHERY_SSL_ENABLED=true
+                PERIPHERY_INCLUDE_DISK_MOUNTS=/etc/hostname
+                PERIPHERY_LOGGING_PRETTY=false
+                PERIPHERY_PRETTY_STARTUP_CONFIG=false
+              volumes:
+                - /var/run/docker.sock:/var/run/docker.sock
+                - /proc:/proc
+                - /etc/komodo:/etc/komodo
+
+          volumes:
+            mongo-data:
+            mongo-config:
+
+    - name: Create .env file
+      copy:
+        dest: "{{ deploy_path }}/.env"
+        content: |
+          KOMODO_INIT_ADMIN_USERNAME={{ komodo_user }}
+          KOMODO_INIT_ADMIN_PASSWORD={{ komodo_password }}
+          KOMODO_PASSKEY={{ komodo_secret_key }}
+          KOMODO_DATABASE_USERNAME={{ mongo_user }}
+          KOMODO_DATABASE_PASSWORD={{ mongo_password }}
+
+    - name: Deploy Komodo with Podman Compose
+      ansible.builtin.shell: |
+        /usr/local/bin/podman-compose -f {{ deploy_path }}/docker-compose.yml up -d
+      args:
+        chdir: "{{ deploy_path }}"
