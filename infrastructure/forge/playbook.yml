@@ -107,7 +107,7 @@
                 PERIPHERY_ROOT_DIRECTORY=/etc/komodo
                 PERIPHERY_PASSKEYS=${KOMODO_PASSKEY}
                 PERIPHERY_DISABLE_TERMINALS=false
-                PERIPHERY_SSL_ENABLED=true
+                PERIPHERY_SSL_ENABLED=false
                 PERIPHERY_INCLUDE_DISK_MOUNTS=/etc/hostname
                 PERIPHERY_LOGGING_PRETTY=false
                 PERIPHERY_PRETTY_STARTUP_CONFIG=false
@@ -129,6 +129,12 @@
           KOMODO_PASSKEY={{ komodo_secret_key }}
           KOMODO_DATABASE_USERNAME={{ mongo_user }}
           KOMODO_DATABASE_PASSWORD={{ mongo_password }}
+
+    - name: Deploy Komodo with Podman Compose
+      ansible.builtin.shell: |
+        /usr/local/bin/podman-compose -f {{ deploy_path }}/docker-compose.yml down
+      args:
+        chdir: "{{ deploy_path }}"
 
     - name: Deploy Komodo with Podman Compose
       ansible.builtin.shell: |
