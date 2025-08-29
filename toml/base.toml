@@ -1,8 +1,11 @@
 [[resource_sync]]
-name = "base_helper"
+name = "base"
 [resource_sync.config]
 repo = "Myrenic/WyvernWatch"
-resource_path = ["./toml/base_helper.toml"]
+resource_path = [
+  "./toml/base.toml",
+  "./toml/general/"
+]
 include_variables = true
 
 [[repo]]

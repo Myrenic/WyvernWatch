@@ -1,0 +1,12 @@
+[[procedure]]
+name = "Base"
+
+[[procedure.config.stage]]
+name = "Make sure everything is up-to-date"
+enabled = true
+executions = [
+  { execution.type = "PullRepo", execution.params.repo = "Myrenic/WyvernWatch", enabled = true },
+  { execution.type = "RunSync", execution.params.sync = "base_helper", enabled = true },
+  { execution.type = "Sleep", execution.params.duration_ms = 5, enabled = true },
+  { execution.type = "RunSync", execution.params.sync = "base", enabled = true }
+]
