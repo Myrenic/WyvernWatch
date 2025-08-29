@@ -35,6 +35,18 @@
         name: podman-compose
         executable: pip3
 
+    - name: Enable the podman socket
+      ansible.builtin.shell: |
+        sudo systemctl enable --now podman.socket
+      args:
+        chdir: "{{ deploy_path }}"
+
+    - name: unstage Komodo with Podman Compose
+      ansible.builtin.shell: |
+        /usr/local/bin/podman-compose -f {{ deploy_path }}/docker-compose.yml down
+      args:
+        chdir: "{{ deploy_path }}"
+
     - name: Ensure firewalld is running and enabled
       systemd:
         name: firewalld
@@ -91,6 +103,9 @@
                 KOMODO_PASSKEY: ${KOMODO_PASSKEY}
                 KOMODO_BIND_IP: "0.0.0.0"
                 KOMODO_LOCAL_AUTH: "true"
+                KOMODO_FIRST_SERVER=https://periphery:8120
+                KOMODO_FIRST_SERVER_NAME=Local
+                KOMODO_DISABLE_CONFIRM_DIALOG=true
               # volumes:
               #   ## Store dated backups of the database - https://komo.do/docs/setup/backup
               #   # - ${COMPOSE_KOMODO_BACKUPS_PATH}:/backups
@@ -103,16 +118,15 @@
               labels:
                 komodo.skip: "" # Prevent Komodo from stopping with StopAllContainers
               restart: unless-stopped
+              privileged: true
               environment:
-                PERIPHERY_ROOT_DIRECTORY=/etc/komodo
-                PERIPHERY_PASSKEYS=${KOMODO_PASSKEY}
-                PERIPHERY_DISABLE_TERMINALS=false
-                PERIPHERY_SSL_ENABLED=false
-                PERIPHERY_INCLUDE_DISK_MOUNTS=/etc/hostname
-                PERIPHERY_LOGGING_PRETTY=false
-                PERIPHERY_PRETTY_STARTUP_CONFIG=false
+                PERIPHERY_ROOT_DIRECTORY: /etc/komodo
+                PERIPHERY_PASSKEYS: ${KOMODO_PASSKEY}
+                PERIPHERY_DISABLE_TERMINALS: 'false'
+                PERIPHERY_SSL_ENABLED: 'true'
+                PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
               volumes:
-                - /var/run/docker.sock:/var/run/docker.sock
+                - /run/podman/podman.sock:/var/run/docker.sock
                 - /proc:/proc
                 - /etc/komodo:/etc/komodo
 
@@ -132,12 +146,7 @@
 
     - name: Deploy Komodo with Podman Compose
       ansible.builtin.shell: |
-        /usr/local/bin/podman-compose -f {{ deploy_path }}/docker-compose.yml down
-      args:
-        chdir: "{{ deploy_path }}"
-
-    - name: Deploy Komodo with Podman Compose
-      ansible.builtin.shell: |
         /usr/local/bin/podman-compose -f {{ deploy_path }}/docker-compose.yml up -d
       args:
         chdir: "{{ deploy_path }}"
+

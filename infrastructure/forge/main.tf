@@ -23,8 +23,7 @@ resource "random_password" "komodo_app_password" {
 # Generate komodo password
 resource "random_password" "komodo_app_secret" {
   length           = 32
-  override_special = "_%@"
-  special          = true
+  special          = false
 }
 
 # Generate db password

@@ -1,0 +1,7 @@
+name: hello-world
+services:
+    hello-world:
+        container_name: web-test
+        ports:
+            - 80:8000
+        image: crccheck/hello-world
