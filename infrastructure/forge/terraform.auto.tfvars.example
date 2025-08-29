@@ -1,9 +1,9 @@
 hosts = {
-    identity_disc = {
-      name    = "identity-disc"
+    komodo_dragon = {
+      name    = "komodo-dragon"
       cores   = 4
       memory  = 4096
-      ip_addr = "10.0.69.20"
+      ip_addr = "10.0.69.21"
       gateway = "10.0.69.1"
       cidr    = "/24"
       node_name = "proxmox"
