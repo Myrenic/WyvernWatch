@@ -1,4 +1,10 @@
 [[resource_sync]]
+name = "hello-world"
+[resource_sync.config]
+repo = "Myrenic/WyvernWatch"
+resource_path = ["./toml/hello-world/"]
+
+[[resource_sync]]
 name = "Zabbix-Stack"
 [resource_sync.config]
 repo = "Myrenic/WyvernWatch"
