@@ -38,14 +38,6 @@
     - name: Enable the podman socket
       ansible.builtin.shell: |
         sudo systemctl enable --now podman.socket
-      args:
-        chdir: "{{ deploy_path }}"
-
-    - name: unstage Komodo with Podman Compose
-      ansible.builtin.shell: |
-        /usr/local/bin/podman-compose -f {{ deploy_path }}/docker-compose.yml down
-      args:
-        chdir: "{{ deploy_path }}"
 
     - name: Ensure firewalld is running and enabled
       systemd:
@@ -103,9 +95,9 @@
                 KOMODO_PASSKEY: ${KOMODO_PASSKEY}
                 KOMODO_BIND_IP: "0.0.0.0"
                 KOMODO_LOCAL_AUTH: "true"
-                KOMODO_FIRST_SERVER=https://periphery:8120
-                KOMODO_FIRST_SERVER_NAME=Local
-                KOMODO_DISABLE_CONFIRM_DIALOG=true
+                KOMODO_FIRST_SERVER: https://periphery:8120
+                KOMODO_FIRST_SERVER_NAME: 'Local'
+                KOMODO_DISABLE_CONFIRM_DIALOG: 'true'
               # volumes:
               #   ## Store dated backups of the database - https://komo.do/docs/setup/backup
               #   # - ${COMPOSE_KOMODO_BACKUPS_PATH}:/backups
@@ -143,6 +135,12 @@
           KOMODO_PASSKEY={{ komodo_secret_key }}
           KOMODO_DATABASE_USERNAME={{ mongo_user }}
           KOMODO_DATABASE_PASSWORD={{ mongo_password }}
+
+    - name: unstage Komodo with Podman Compose
+      ansible.builtin.shell: |
+        /usr/local/bin/podman-compose -f {{ deploy_path }}/docker-compose.yml down
+      args:
+        chdir: "{{ deploy_path }}"
 
     - name: Deploy Komodo with Podman Compose
       ansible.builtin.shell: |
