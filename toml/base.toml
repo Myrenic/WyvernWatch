@@ -4,3 +4,10 @@ name = "base"
 repo = "Myrenic/WyvernWatch"
 resource_path = ["base.toml"]
 include_variables = true
+
+[[repo]]
+name = "Myrenic/WyvernWatch"
+[repo.config]
+server = "Local"
+builder = "Local"
+repo = "Myrenic/WyvernWatch"
