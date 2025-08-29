@@ -1,0 +1,8 @@
+[[stack]]
+name = "zabbix"
+[stack.config]
+server = "local"
+poll_for_updates = true
+auto_update = true
+repo = "Myrenic/WyvernWatch"
+run_directory = "./apps/zabbix/"

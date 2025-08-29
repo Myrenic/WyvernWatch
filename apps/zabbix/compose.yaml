@@ -1,0 +1,115 @@
+services:
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:7.4-ubuntu-latest
+    container_name: zabbix-server
+    environment:
+      DB_SERVER_HOST: ${DB_SERVER_HOST}
+      ZBX_LOG_LEVEL: ${ZBX_LOG_LEVEL}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      ZBX_CACHESIZE: ${ZBX_CACHESIZE}
+      ZBX_HISTORYCACHESIZE: ${ZBX_HISTORYCACHESIZE}
+      ZBX_TRENDCACHESIZE: ${ZBX_TRENDCACHESIZE}
+      ZBX_VALUECACHESIZE: ${ZBX_VALUECACHESIZE}
+      ZBX_STARTPOLLERS: ${ZBX_STARTPOLLERS}
+      ZBX_STARTIPMIPOLLERS: ${ZBX_STARTIPMIPOLLERS}
+      ZBX_STARTPOLLERSUNREACHABLE: ${ZBX_STARTPOLLERSUNREACHABLE}
+      ZBX_STARTTRAPPERS: ${ZBX_STARTTRAPPERS}
+      ZBX_STARTPINGERS: ${ZBX_STARTPINGERS}
+      ZBX_STARTVMWARECOLLECTORS: ${ZBX_STARTVMWARECOLLECTORS}
+      ZBX_STARTDISCOVERERS: ${ZBX_STARTDISCOVERERS}
+      ZBX_STARTHTTPPOLLERS: ${ZBX_STARTHTTPPOLLERS}
+      ZBX_STARTTIMERS: ${ZBX_STARTTIMERS}
+      ZBX_STARTESCALATORS: ${ZBX_STARTESCALATORS}
+      ZBX_STARTALERTERS: ${ZBX_STARTALERTERS}
+      ZBX_TIMEOUT: ${ZBX_TIMEOUT}
+      ZBX_LOGSLOWQUERIES: ${ZBX_LOGSLOWQUERIES}
+      ZBX_STARTDBSYNCERS: ${ZBX_STARTDBSYNCERS}
+      ZBX_HOUSEKEEPINGFREQUENCY: ${ZBX_HOUSEKEEPINGFREQUENCY}
+      ZBX_MAXHOUSEKEEPERDELETE: ${ZBX_MAXHOUSEKEEPERDELETE}
+      ZBX_NODEADDRESS: ${ZBX_NODEADDRESS}
+      ZBX_HANODENAME: ${ZBX_HANODENAME}
+    volumes:
+      - zbx_alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - zbx_externalscripts:/usr/lib/zabbix/externalscripts:ro
+    ports:
+      - "10051:10051"
+    depends_on:
+      - zabbix-db
+    networks:
+      - zabbix-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h ${DB_SERVER_HOST}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-pgsql:7.4-ubuntu-latest
+    container_name: zabbix-web
+    volumes:
+      - /home/mtuntelder/Zabbix/web/certs:/certs:ro
+    environment:
+      ZBX_SERVER_NAME: ${ZBX_SERVER_NAME}
+      DB_SERVER_HOST: ${DB_SERVER_HOST}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PHP_TZ: ${PHP_TZ}
+      ZBX_SSO_IDP_CERT: ${ZBX_SSO_IDP_CERT}
+      ZBX_SSO_SETTINGS: ${ZBX_SSO_SETTINGS}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - zabbix-server
+    networks:
+      - zabbix-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  zabbix-db:
+    image: timescale/timescaledb:2.19.3-pg14
+    container_name: zabbix-db
+    command: >
+      postgres -c 'max_connections=1000'
+               -c 'max_wal_size=4GB'
+               -c 'shared_preload_libraries=timescaledb'
+               -c 'shared_buffers=4GB'
+               -c 'work_mem=64MB'
+               -c 'maintenance_work_mem=512MB'
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - zbx_database:/var/lib/postgresql/data
+    networks:
+      - zabbix-network
+      - postgres_backup-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  zbx_alertscripts:
+  zbx_externalscripts:
+  zbx_db:
+  zbx_database:
+  zabbix_proxy:
+
+networks:
+  zabbix-network:
+    driver: bridge
+  postgres_backup-network:
+    external: true
