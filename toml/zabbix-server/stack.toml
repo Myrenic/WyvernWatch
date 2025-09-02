@@ -1,5 +1,5 @@
 [[stack]]
-name = "zabbix"
+name = "zabbix-server"
 [stack.config]
 server = "Local"
 poll_for_updates = true
