@@ -1,0 +1,39 @@
+[[variable]]
+name = "ZABBIX_PROXY_MYSQL_USER"
+description = "ZABBIX_PROXY_MYSQL_USER"
+is_secret = true
+
+##
+
+[[variable]]
+name = "ZABBIX_PROXY_MYSQL_PASSWORD"
+description = "ZABBIX_PROXY_MYSQL_PASSWORD"
+is_secret = true
+
+##
+
+[[variable]]
+name = "ZABBIX_PROXY_MYSQL_ROOT_PASSWORD"
+description = "ZABBIX_PROXY_MYSQL_ROOT_PASSWORD"
+is_secret = true
+
+##
+
+[[variable]]
+name = "ZABBIX_PROXY_ZBX_SERVER_HOST"
+description = "ZABBIX_PROXY_ZBX_SERVER_HOST"
+is_secret = true
+
+##
+
+[[variable]]
+name = "ZABBIX_PROXY_ZBX_HOSTNAME"
+description = "ZABBIX_PROXY_ZBX_HOSTNAME"
+is_secret = true
+
+##
+
+[[variable]]
+name = "ZABBIX_PROXY_ZBX_TLSPSKFILE"
+description = "ZABBIX_PROXY_ZBX_TLSPSKFILE"
+is_secret = true

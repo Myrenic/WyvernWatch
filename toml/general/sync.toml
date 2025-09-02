@@ -5,7 +5,13 @@ repo = "Myrenic/WyvernWatch"
 resource_path = ["./toml/hello-world/"]
 
 [[resource_sync]]
-name = "Zabbix-Stack"
+name = "Zabbix-server-stack"
 [resource_sync.config]
 repo = "Myrenic/WyvernWatch"
-resource_path = ["./toml/zabbix/"]
+resource_path = ["./toml/zabbix-server/"]
+
+[[resource_sync]]
+name = "Zabbix-proxy-stack"
+[resource_sync.config]
+repo = "Myrenic/WyvernWatch"
+resource_path = ["./toml/zabbix-proxy/"]

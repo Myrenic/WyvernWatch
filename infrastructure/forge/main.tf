@@ -97,6 +97,11 @@ resource "proxmox_virtual_environment_vm" "vm" {
       }
     }
 
+    dns {
+      servers = ["10.123.4.8", "10.123.4.9"] # Cloudflare + Google
+      domain  = "emea.thermo.com"
+    }
+
     user_account {
       username = "almalinux"
       password = random_password.almalinux_vm_password.result

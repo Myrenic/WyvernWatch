@@ -1,5 +1,5 @@
 [[resource_sync]]
-name = "base_helper"
+name = "base"
 [resource_sync.config]
 repo = "Myrenic/WyvernWatch"
 resource_path = [

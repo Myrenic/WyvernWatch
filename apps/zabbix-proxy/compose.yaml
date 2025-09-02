@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: zabbix-proxy-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  zabbix-proxy:
+    image: zabbix/zabbix-proxy-mysql:ubuntu-7.2.4
+    container_name: ${ZBX_HOSTNAME}
+    restart: unless-stopped
+    ports:
+      - "10051:10051"
+    depends_on:
+      - mysql
+    environment:
+      - ZBX_SERVER_HOST=${ZBX_SERVER_HOST}
+      - ZBX_SERVER_PORT=${ZBX_SERVER_PORT}
+      - ZBX_HOSTNAME=${ZBX_HOSTNAME}
+      - ZBX_PROXYMODE=${ZBX_PROXYMODE}
+      - ZBX_CACHESIZE=${ZBX_CACHESIZE}
+      - ZBX_HISTORYCACHESIZE=${ZBX_HISTORYCACHESIZE}
+      - ZBX_HISTORYINDEXCACHESIZE=${ZBX_HISTORYINDEXCACHESIZE}
+      - ZBX_STARTPOLLERS=${ZBX_STARTPOLLERS}
+      - ZBX_STARTSNMPPOLLERS=${ZBX_STARTSNMPPOLLERS}
+      - ZBX_STARTPREPROCESSORS=${ZBX_STARTPREPROCESSORS}
+      - ZBX_STARTTRAPPERS=${ZBX_STARTTRAPPERS}
+      - DB_SERVER_HOST=${DB_SERVER_HOST}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - ZBX_TLSCONNECT=psk
+      - ZBX_TLSACCEPT=psk
+      - ZBX_TLSPSKIDENTITY=${ZBX_HOSTNAME}
+      - ZBX_TLSPSKFILE=${ZBX_TLSPSKFILE}
+    volumes:
+      - zabbix_proxy:/var/lib/zabbix
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD-SHELL", "zabbix_proxy -V"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  zabbix_proxy:
+  mysql_data:

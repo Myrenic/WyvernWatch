@@ -1,39 +1,39 @@
 [[variable]]
-name = "POSTGRES_PASSWORD"
+name = "ZABBIX_SERVER_POSTGRES_PASSWORD"
 description = "TimescaleDB Password"
 is_secret = true
 
 ##
 
 [[variable]]
-name = "ZBX_NODEADDRESS"
+name = "ZABBIX_SERVER_ZBX_NODEADDRESS"
 description = "Zabbix node IP"
 is_secret = false
 
 ##
 
 [[variable]]
-name = "ZBX_HANODENAME"
+name = "ZABBIX_SERVER_ZBX_HANODENAME"
 description = "Zabbix Node name"
 is_secret = false
 
 ##
 
 [[variable]]
-name = "ZBX_SERVER_NAME"
+name = "ZABBIX_SERVER_ZBX_SERVER_NAME"
 description = "Server name, shown in ui"
 is_secret = false
 
 ##
 
 [[variable]]
-name = "PHP_TZ"
+name = "ZABBIX_SERVER_PHP_TZ"
 description = "Timezone (e.q. Europe/Amsterdam)"
 is_secret = false
 
 ##
 
 [[variable]]
-name = "ZBX_SSO_SETTINGS"
+name = "ZABBIX_SERVER_ZBX_SSO_SETTINGS"
 description = "SSO Settings"
 is_secret = false
