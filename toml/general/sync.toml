@@ -9,9 +9,11 @@ name = "Zabbix-server-stack"
 [resource_sync.config]
 repo = "Myrenic/WyvernWatch"
 resource_path = ["./toml/zabbix-server/"]
+include_variables = true
 
 [[resource_sync]]
 name = "Zabbix-proxy-stack"
 [resource_sync.config]
 repo = "Myrenic/WyvernWatch"
 resource_path = ["./toml/zabbix-proxy/"]
+include_variables = true
